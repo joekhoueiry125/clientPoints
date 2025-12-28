@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Top 10 Clients</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 0 auto;
+            font-size: 1.5em;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        th,
+        td {
+            border: 2px solid #333;
+            padding: 15px;
+        }
+
+        th {
+            background: #ff5722;
+            color: #fff;
+            font-size: 1.6em;
+        }
+
+        td {
+            background: #222;
+        }
+
+        tr:hover td {
+            background: #333;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Top 10 Clients</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody id="clients"></tbody>
+    </table>
+
+    <script>
+        const SPREADSHEET_ID = "1R7gjrmbhhxbwXYqZHU_8y5giVM_o9TEN9wUwQwHPyMs";
+        const SHEET_NAME = "Sheet1";
+        const API_KEY = "AIzaSyDbGyfbVwG_Hw-UL-XqdAPAx5HVL5w1qcE";
+
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
+        function fetchClients() {
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const rows = data.values.slice(1); // skip header
+                    const clients = rows.map(r => ({
+                        name: r[0],
+                        spent: r[1]
+                    }));
+
+                    // sort and take top 10
+                    const topClients = clients.sort((a, b) => b.spent - a.spent).slice(0, 10);
+
+                    // update table
+                    const tbody = document.getElementById("clients");
+                    tbody.innerHTML = ""; // clear old rows
+                    topClients.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${c.name}</td>
+                                <td>${c.spent}</td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(err => console.error("Error fetching data:", err));
+        }
+
+        // initial fetch
+        fetchClients();
+
+        // refresh every 10 seconds
+        setInterval(fetchClients, 10000);
+    </script>
+
+</body>
+
+</html>
